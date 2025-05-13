@@ -160,7 +160,7 @@ tk.Button(bottom_frame, text="Start Detecting", font=("Arial",10,"bold"), comman
 tk.Button(bottom_frame, text="Stop Detecting", font=("Arial",10), command=stop_detection,
           bg="#A52A2A", fg="white", relief="flat", padx=12, pady=6, width=14).grid(row=0,column=1,padx=5)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 show_logo()
