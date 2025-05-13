@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 import subprocess
 import threading
-
+import sys
 
 # ✅ Choose device
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -43,7 +43,15 @@ def capture_image():
         save_frame_with_timestamp(last_predicted_frame, prefix="manual")
 
 def open_results_folder():
-    subprocess.Popen(f'explorer "{os.path.abspath("results")}"')
+    try:
+        if sys.platform.startswith("win"):
+            subprocess.Popen(f'explorer "{os.path.abspath("results")}"')
+        elif sys.platform.startswith("darwin"):
+            subprocess.Popen(["open", os.path.abspath("results")])
+        else:
+            subprocess.Popen(["xdg-open", os.path.abspath("results")])
+    except Exception as e:
+        print(f"Error opening folder: {e}")
 
 def show_logo():
     global tk_image
@@ -73,7 +81,6 @@ def predict_and_update(frame):
             return
         predicting = True
     try:
-        # ✅ Run prediction on correct device with reduced size
         results = model(frame, imgsz=224, verbose=False, device=device)
         counts_local = {k: 0 for k in counts}
         for result in results:
@@ -106,7 +113,6 @@ def update_frame():
     ret, frame = cap.read()
     if ret:
         frame_skip += 1
-        # Skip every other frame
         if frame_skip % 2 != 0:
             root.after(30, update_frame)
             return
@@ -121,7 +127,7 @@ def update_frame():
         video_label.configure(image=tk_image)
     else:
         show_logo()
-    root.after(10, update_frame)  # ~10 FPS (reduced)
+    root.after(10, update_frame)
 
 # ✅ GUI
 root = tk.Tk()
@@ -160,7 +166,7 @@ tk.Button(bottom_frame, text="Start Detecting", font=("Arial",10,"bold"), comman
 tk.Button(bottom_frame, text="Stop Detecting", font=("Arial",10), command=stop_detection,
           bg="#A52A2A", fg="white", relief="flat", padx=12, pady=6, width=14).grid(row=0,column=1,padx=5)
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 show_logo()
